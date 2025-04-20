@@ -51,20 +51,23 @@ BrainyMath is a modern web application designed to make mathematics learning eng
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/brainymath.git
-cd brainymath
+git clone https://github.com/Nagchi-Mohamed/BrainyMath.git
+cd BrainyMath
 ```
 
 2. Install dependencies:
 
 ```bash
 npm install
+cd client && npm install
+cd ../server && npm install
 ```
 
 3. Start the development server:
 
 ```bash
-npm start
+# In the root directory
+npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -72,6 +75,8 @@ npm start
 ## 🛠️ Built With
 
 - **React** - Frontend framework
+- **Express** - Backend framework
+- **MongoDB** - Database
 - **Styled Components** - CSS-in-JS styling
 - **React Router** - Navigation and routing
 - **React Icons** - Icon library
@@ -82,36 +87,47 @@ npm start
 
 ```
 brainymath/
-├── public/
-│   ├── images/
-│   │   └── Logo.svg
-│   └── favicon.ico
-├── src/
-│   ├── components/
-│   │   ├── Navbar.js
-│   │   ├── Footer.js
-│   │   └── LoadingScreen.js
-│   ├── pages/
-│   │   ├── Home.js
-│   │   ├── Lessons.js
-│   │   ├── Games.js
-│   │   ├── Groups.js
-│   │   ├── Forum.js
-│   │   ├── Classroom.js
-│   │   ├── Profile.js
-│   │   └── NotFound.js
-│   ├── context/
-│   │   └── SettingsContext.js
-│   ├── hooks/
-│   │   └── useTranslation.js
-│   ├── styles/
-│   │   └── GlobalStyle.js
-│   ├── theme/
-│   │   └── index.js
-│   ├── translations/
-│   │   └── index.js
-│   ├── routes.js
-│   └── App.js
+├── client/
+│   ├── public/
+│   │   ├── images/
+│   │   │   └── Logo.svg
+│   │   └── favicon.ico
+│   └── src/
+│       ├── components/
+│       │   ├── Navbar.js
+│       │   ├── Footer.js
+│       │   └── LoadingScreen.js
+│       ├── pages/
+│       │   ├── Home.js
+│       │   ├── Lessons.js
+│       │   ├── Games.js
+│       │   ├── Groups.js
+│       │   ├── Forum.js
+│       │   ├── Classroom.js
+│       │   ├── Profile.js
+│       │   └── NotFound.js
+│       ├── context/
+│       │   └── SettingsContext.js
+│       ├── hooks/
+│       │   └── useTranslation.js
+│       ├── styles/
+│       │   └── GlobalStyle.js
+│       ├── theme/
+│       │   └── index.js
+│       ├── translations/
+│       │   └── index.js
+│       ├── routes.js
+│       └── App.js
+├── server/
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── lessons.js
+│   │   ├── games.js
+│   │   ├── groups.js
+│   │   └── forum.js
+│   ├── data/
+│   │   └── .gitkeep
+│   └── index.js
 ├── package.json
 └── README.md
 ```
@@ -184,7 +200,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Your Name - Initial work
+- Nagchi Mohamed - Initial work
 
 ## 🙏 Acknowledgments
 
