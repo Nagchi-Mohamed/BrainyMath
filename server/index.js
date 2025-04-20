@@ -31,12 +31,13 @@ const corsOptions = {
 // Apply CORS
 app.use(cors(corsOptions));
 
-// Rate limiter configuration
+// Configure rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: process.env.NODE_ENV === 'development', // Trust proxy in development
   skip: (req) => {
     // Skip rate limiting for development hot reload requests
     if (process.env.NODE_ENV === 'development') {
