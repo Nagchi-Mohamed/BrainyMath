@@ -1,77 +1,81 @@
-const bcrypt = require('bcryptjs');
-const fs = require('fs').promises;
-const path = require('path');
+import { DataTypes } from 'sequelize';
+import bcrypt from 'bcryptjs';
+import { sequelize } from '../config/database.js';
 
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-class User {
-  static async findById(id) {
-    const users = await this.readUsers();
-    return users.find(user => user.id === id);
-  }
-
-  static async findByEmail(email) {
-    const users = await this.readUsers();
-    return users.find(user => user.email === email);
-  }
-
-  static async findByUsername(username) {
-    const users = await this.readUsers();
-    return users.find(user => user.username === username);
-  }
-
-  static async create(userData) {
-    const users = await this.readUsers();
-    
-    // Check if user already exists
-    if (users.some(user => user.email === userData.email || user.username === userData.username)) {
-      throw new Error('User already exists');
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      len: [3, 30]
     }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
-
-    const newUser = {
-      id: Date.now().toString(),
-      username: userData.username,
-      email: userData.email,
-      password: hashedPassword,
-      role: userData.role || 'student',
-      progress: {
-        completedLessons: [],
-        quizScores: []
-      },
-      groups: [],
-      createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    await this.writeUsers(users);
-    return newUser;
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [6, 100]
+    }
+  },
+  role: {
+    type: DataTypes.ENUM('student', 'teacher', 'admin'),
+    defaultValue: 'student'
+  },
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  avatar: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  lastLogin: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
-
-  static async comparePassword(hashedPassword, candidatePassword) {
-    return bcrypt.compare(candidatePassword, hashedPassword);
-  }
-
-  static async readUsers() {
-    try {
-      const data = await fs.readFile(USERS_FILE, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        // File doesn't exist, create it with empty array
-        await this.writeUsers([]);
-        return [];
+}, {
+  timestamps: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
       }
-      throw error;
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
     }
   }
+});
 
-  static async writeUsers(users) {
-    await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
-  }
-}
+// Instance method to check password
+User.prototype.validatePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
 
-module.exports = User; 
+export default User;
