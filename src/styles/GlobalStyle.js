@@ -3,7 +3,7 @@ import { createGlobalStyle } from 'styled-components';
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
   
-  * {
+  *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -16,103 +16,159 @@ const GlobalStyle = createGlobalStyle`
   
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: ${props => props.theme.colors.background};
-    color: ${props => props.theme.colors.text};
-    line-height: 1.6;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
+    line-height: ${({ theme }) => theme.typography.lineHeights.normal};
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color ${({ theme }) => theme.transitions.default},
+                color ${({ theme }) => theme.transitions.default};
     overflow-x: hidden;
   }
   
   a {
+    color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
-    color: inherit;
-    transition: color 0.2s ease;
+    transition: color ${({ theme }) => theme.transitions.fast};
+    
+    &:hover {
+      color: ${({ theme }) => theme.colors.accent};
+    }
   }
   
   button {
-    cursor: pointer;
     font-family: inherit;
     border: none;
-    outline: none;
-    transition: all 0.2s ease;
-  }
-  
-  input, textarea, select {
-    font-family: inherit;
-    font-size: inherit;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transition: all ${({ theme }) => theme.transitions.fast};
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
   
   img {
     max-width: 100%;
     height: auto;
+    display: block;
   }
   
-  ul, ol {
-    list-style: none;
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background-color: ${({ theme }) => theme.colors.white};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: 0.5rem 0.75rem;
+    transition: all ${({ theme }) => theme.transitions.fast};
+    
+    &:focus {
+      outline: none;
+      border-color: ${({ theme }) => theme.colors.primary};
+      box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
+    }
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    line-height: 1.3;
+    font-weight: ${({ theme }) => theme.typography.fontWeights.bold};
+    line-height: ${({ theme }) => theme.typography.lineHeights.tight};
     margin-bottom: 1rem;
   }
+  
+  h1 { font-size: ${({ theme }) => theme.typography.fontSizes['4xl']}; }
+  h2 { font-size: ${({ theme }) => theme.typography.fontSizes['3xl']}; }
+  h3 { font-size: ${({ theme }) => theme.typography.fontSizes['2xl']}; }
+  h4 { font-size: ${({ theme }) => theme.typography.fontSizes.xl}; }
+  h5 { font-size: ${({ theme }) => theme.typography.fontSizes.lg}; }
+  h6 { font-size: ${({ theme }) => theme.typography.fontSizes.base}; }
   
   p {
     margin-bottom: 1rem;
   }
   
   .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
+    
+    @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+      padding: 0 2rem;
+    }
   }
   
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: ${props => props.theme.borderRadius.md};
-    font-weight: 500;
-    transition: all 0.2s ease;
-    text-align: center;
-    cursor: pointer;
-  }
-  
-  .btn-primary {
-    background-color: ${props => props.theme.colors.primary};
-    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    font-weight: ${({ theme }) => theme.typography.fontWeights.medium};
+    transition: all ${({ theme }) => theme.transitions.fast};
+    gap: 0.5rem;
     
-    &:hover {
-      background-color: ${props => props.theme.colors.secondary};
-      transform: translateY(-2px);
-      box-shadow: ${props => props.theme.shadows.md};
-    }
-  }
-  
-  .btn-secondary {
-    background-color: transparent;
-    color: ${props => props.theme.colors.primary};
-    border: 1px solid ${props => props.theme.colors.primary};
-    
-    &:hover {
-      background-color: ${props => props.theme.colors.primary};
+    &-primary {
+      background-color: ${({ theme }) => theme.colors.primary};
       color: white;
-      transform: translateY(-2px);
-      box-shadow: ${props => props.theme.shadows.md};
+      
+      &:hover {
+        background-color: ${({ theme }) => theme.colors.primary}dd;
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+    
+    &-secondary {
+      background-color: ${({ theme }) => theme.colors.secondary};
+      color: white;
+      
+      &:hover {
+        background-color: ${({ theme }) => theme.colors.secondary}dd;
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+    
+    &-outline {
+      border: 1px solid ${({ theme }) => theme.colors.border};
+      color: ${({ theme }) => theme.colors.text};
+      
+      &:hover {
+        border-color: ${({ theme }) => theme.colors.primary};
+        color: ${({ theme }) => theme.colors.primary};
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
     }
   }
   
   .card {
-    background-color: ${props => props.theme.colors.white};
-    border-radius: ${props => props.theme.borderRadius.md};
-    box-shadow: ${props => props.theme.shadows.sm};
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: ${({ theme }) => theme.colors.cardBg};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    transition: all ${({ theme }) => theme.transitions.default};
     
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: ${props => props.theme.shadows.md};
+      transform: translateY(-2px);
+      box-shadow: ${({ theme }) => theme.shadows.lg};
     }
   }
   
@@ -124,7 +180,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: 2rem;
     margin-bottom: 2rem;
     text-align: center;
-    color: ${props => props.theme.colors.text};
+    color: ${({ theme }) => theme.colors.text};
     position: relative;
     
     &:after {
@@ -135,48 +191,52 @@ const GlobalStyle = createGlobalStyle`
       transform: translateX(-50%);
       width: 50px;
       height: 3px;
-      background-color: ${props => props.theme.colors.primary};
+      background-color: ${({ theme }) => theme.colors.primary};
     }
   }
   
-  .fade-in {
-    animation: fadeIn 0.5s ease-in;
+  .fade-enter {
+    opacity: 0;
   }
   
-  .slide-up {
-    animation: slideUp 0.5s ease-out;
+  .fade-enter-active {
+    opacity: 1;
+    transition: opacity ${({ theme }) => theme.transitions.default};
   }
   
-  .slide-in-left {
-    animation: slideInLeft 0.5s ease-out;
+  .fade-exit {
+    opacity: 1;
   }
   
-  .slide-in-right {
-    animation: slideInRight 0.5s ease-out;
+  .fade-exit-active {
+    opacity: 0;
+    transition: opacity ${({ theme }) => theme.transitions.default};
   }
   
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  .slide-up-enter {
+    transform: translateY(20px);
+    opacity: 0;
   }
   
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  .slide-up-enter-active {
+    transform: translateY(0);
+    opacity: 1;
+    transition: all ${({ theme }) => theme.transitions.default};
   }
   
-  @keyframes slideInLeft {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+  .slide-up-exit {
+    transform: translateY(0);
+    opacity: 1;
   }
   
-  @keyframes slideInRight {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+  .slide-up-exit-active {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all ${({ theme }) => theme.transitions.default};
   }
   
   /* Responsive adjustments */
-  @media (max-width: ${props => props.theme.breakpoints.md}) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     html {
       font-size: 14px;
     }
@@ -186,7 +246,7 @@ const GlobalStyle = createGlobalStyle`
     }
   }
   
-  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     html {
       font-size: 12px;
     }

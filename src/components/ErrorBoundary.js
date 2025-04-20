@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useTranslation } from '../hooks/useTranslation';
 
 const ErrorContainer = styled.div`
   display: flex;
@@ -10,35 +9,40 @@ const ErrorContainer = styled.div`
   min-height: 100vh;
   padding: 2rem;
   text-align: center;
-  background-color: ${props => props.theme.colors.background};
+  background: #f9fafb;
+  color: #1f2937;
 `;
 
 const ErrorTitle = styled.h1`
-  font-size: 2.5rem;
-  color: ${props => props.theme.colors.error};
-  margin-bottom: 1rem;
+  font-size: 2.25rem;
+  color: #ef4444;
+  margin-bottom: 1.5rem;
 `;
 
 const ErrorMessage = styled.p`
-  font-size: 1.2rem;
-  color: ${props => props.theme.colors.text};
+  font-size: 1.25rem;
   margin-bottom: 2rem;
   max-width: 600px;
 `;
 
 const RetryButton = styled.button`
-  padding: 0.75rem 2rem;
-  background-color: ${props => props.theme.colors.primary};
+  padding: 1rem 2rem;
+  background: #3b82f6;
   color: white;
   border: none;
-  border-radius: ${props => props.theme.borderRadius.full};
-  font-weight: 500;
+  border-radius: 0.375rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-in-out;
+  font-size: 1rem;
+  font-weight: 500;
 
   &:hover {
-    background-color: ${props => props.theme.colors.secondary};
-    transform: translateY(-2px);
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -57,7 +61,7 @@ class ErrorBoundary extends React.Component {
       error: error,
       errorInfo: errorInfo
     });
-    // You can also log the error to an error reporting service here
+    // Here you could also log the error to an error reporting service
     console.error('Error caught by boundary:', error, errorInfo);
   }
 

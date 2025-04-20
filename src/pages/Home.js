@@ -274,50 +274,50 @@ const Home = () => {
     <>
       <HeroSection>
         <HeroContent>
-          <HeroTitle>Master Mathematics with BrainyMath</HeroTitle>
+          <HeroTitle>{t('home.title')}</HeroTitle>
           <HeroSubtitle>
-            Interactive lessons, engaging games, and collaborative learning to make mathematics accessible and enjoyable for everyone.
+            {t('home.subtitle')}
           </HeroSubtitle>
           <HeroButtons>
-            <Button to="/lessons" className="primary">Start Learning</Button>
-            <Button to="/games" className="secondary">Play Games</Button>
+            <Button to="/lessons" className="primary">{t('common.start')} {t('nav.lessons')}</Button>
+            <Button to="/games" className="secondary">{t('common.play')} {t('nav.games')}</Button>
           </HeroButtons>
         </HeroContent>
       </HeroSection>
       
       <FeaturesSection>
         <div className="container">
-          <SectionTitle>Why Choose BrainyMath?</SectionTitle>
+          <SectionTitle>{t('home.whyChoose')}</SectionTitle>
           <FeaturesGrid>
             <FeatureCard className="slide-up">
               <FeatureIcon>📚</FeatureIcon>
-              <FeatureTitle>Comprehensive Lessons</FeatureTitle>
+              <FeatureTitle>{t('home.features.lessons.title')}</FeatureTitle>
               <FeatureDescription>
-                From basic arithmetic to advanced calculus, our structured lessons cover all mathematical concepts with clear explanations and examples.
+                {t('home.features.lessons.description')}
               </FeatureDescription>
             </FeatureCard>
             
             <FeatureCard className="slide-up" style={{ animationDelay: '0.2s' }}>
               <FeatureIcon>🎮</FeatureIcon>
-              <FeatureTitle>Interactive Games</FeatureTitle>
+              <FeatureTitle>{t('home.features.games.title')}</FeatureTitle>
               <FeatureDescription>
-                Learn through play with our collection of math games designed to reinforce concepts and make learning fun and engaging.
+                {t('home.features.games.description')}
               </FeatureDescription>
             </FeatureCard>
             
             <FeatureCard className="slide-up" style={{ animationDelay: '0.4s' }}>
               <FeatureIcon>👥</FeatureIcon>
-              <FeatureTitle>Collaborative Learning</FeatureTitle>
+              <FeatureTitle>{t('home.features.groups.title')}</FeatureTitle>
               <FeatureDescription>
-                Join study groups, participate in forums, and connect with peers to enhance your learning experience through collaboration.
+                {t('home.features.groups.description')}
               </FeatureDescription>
             </FeatureCard>
             
             <FeatureCard className="slide-up" style={{ animationDelay: '0.6s' }}>
-              <FeatureIcon>📊</FeatureIcon>
-              <FeatureTitle>Progress Tracking</FeatureTitle>
+              <FeatureIcon>💬</FeatureIcon>
+              <FeatureTitle>{t('home.features.forum.title')}</FeatureTitle>
               <FeatureDescription>
-                Monitor your progress with detailed analytics and personalized recommendations to help you achieve your learning goals.
+                {t('home.features.forum.description')}
               </FeatureDescription>
             </FeatureCard>
           </FeaturesGrid>
@@ -372,11 +372,9 @@ const Home = () => {
       
       <CtaSection>
         <div className="container">
-          <CtaTitle>Ready to Transform Your Math Learning?</CtaTitle>
-          <CtaText>
-            Join thousands of learners who have improved their mathematical skills with BrainyMath. Start your journey today!
-          </CtaText>
-          <CtaButton to="/lessons">Get Started Now</CtaButton>
+          <CtaTitle>{t('home.cta.title')}</CtaTitle>
+          <CtaText>{t('home.cta.description')}</CtaText>
+          <CtaButton to="/register">{t('auth.register')}</CtaButton>
         </div>
       </CtaSection>
     </>

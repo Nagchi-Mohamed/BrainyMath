@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 
 const GamesContainer = styled.div`
   max-width: 1200px;
@@ -105,52 +106,54 @@ const PlayButton = styled(Link)`
 `;
 
 const Games = () => {
+  const { t } = useTranslation();
+  
   const games = [
     {
       id: 1,
-      title: 'Math Quiz',
-      description: 'Test your knowledge with a variety of math problems.',
-      difficulty: 'Easy',
+      title: t('games.categories.quiz'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '❓',
       path: '/games/quiz'
     },
     {
       id: 2,
-      title: 'Number Ninja',
-      description: 'Slice through numbers to solve equations quickly.',
-      difficulty: 'Medium',
+      title: t('games.categories.puzzle'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '🥷',
       path: '/games/ninja'
     },
     {
       id: 3,
-      title: 'Math Memory',
-      description: 'Match math problems with their solutions.',
-      difficulty: 'Easy',
+      title: t('games.categories.strategy'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '🧠',
       path: '/games/memory'
     },
     {
       id: 4,
-      title: 'Equation Solver',
-      description: 'Race against time to solve complex equations.',
-      difficulty: 'Hard',
+      title: t('games.categories.arcade'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '⚡',
       path: '/games/equation'
     },
     {
       id: 5,
-      title: 'Math Puzzle',
-      description: 'Arrange numbers to complete mathematical patterns.',
-      difficulty: 'Medium',
+      title: t('games.categories.puzzle'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '🧩',
       path: '/games/puzzle'
     },
     {
       id: 6,
-      title: 'Math Battle',
-      description: 'Compete with friends in a math showdown.',
-      difficulty: 'Hard',
+      title: t('games.categories.strategy'),
+      description: t('games.description'),
+      difficulty: t('games.difficulty'),
       icon: '⚔️',
       path: '/games/battle'
     }
@@ -158,7 +161,7 @@ const Games = () => {
 
   return (
     <GamesContainer>
-      <PageTitle>Math Games</PageTitle>
+      <PageTitle>{t('games.title')}</PageTitle>
       <GamesGrid>
         {games.map(game => (
           <GameCard key={game.id}>
@@ -168,7 +171,7 @@ const Games = () => {
               <GameDescription>{game.description}</GameDescription>
               <GameMeta>
                 <GameDifficulty level={game.difficulty}>{game.difficulty}</GameDifficulty>
-                <PlayButton to={game.path}>Play Now</PlayButton>
+                <PlayButton to={game.path}>{t('games.playNow')}</PlayButton>
               </GameMeta>
             </GameContent>
           </GameCard>

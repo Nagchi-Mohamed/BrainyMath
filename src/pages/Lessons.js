@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 
 const LessonsContainer = styled.div`
   max-width: 1200px;
@@ -91,60 +92,62 @@ const StartButton = styled(Link)`
 `;
 
 const Lessons = () => {
+  const { t } = useTranslation();
+  
   const lessons = [
     {
-      id: 1,
-      title: 'Basic Addition',
-      description: 'Learn the fundamentals of addition with interactive exercises.',
-      level: 'Beginner',
+      id: '1',
+      title: t('lessons.categories.algebra'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.beginner'),
       icon: '➕',
-      path: '/lessons/addition'
+      path: '/lessons/1'
     },
     {
-      id: 2,
-      title: 'Subtraction Basics',
-      description: 'Master subtraction with fun and engaging problems.',
-      level: 'Beginner',
+      id: '2',
+      title: t('lessons.categories.geometry'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.beginner'),
       icon: '➖',
-      path: '/lessons/subtraction'
+      path: '/lessons/2'
     },
     {
-      id: 3,
-      title: 'Multiplication Tables',
-      description: 'Memorize multiplication tables through interactive games.',
-      level: 'Intermediate',
+      id: '3',
+      title: t('lessons.categories.calculus'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.intermediate'),
       icon: '✖️',
-      path: '/lessons/multiplication'
+      path: '/lessons/3'
     },
     {
-      id: 4,
-      title: 'Division Fundamentals',
-      description: 'Understand division concepts with visual aids.',
-      level: 'Intermediate',
+      id: '4',
+      title: t('lessons.categories.statistics'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.intermediate'),
       icon: '➗',
-      path: '/lessons/division'
+      path: '/lessons/4'
     },
     {
-      id: 5,
-      title: 'Fractions Introduction',
-      description: 'Learn about fractions with hands-on activities.',
-      level: 'Intermediate',
+      id: '5',
+      title: t('lessons.categories.algebra'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.advanced'),
       icon: '½',
-      path: '/lessons/fractions'
+      path: '/lessons/5'
     },
     {
-      id: 6,
-      title: 'Basic Algebra',
-      description: 'Introduction to algebraic concepts and equations.',
-      level: 'Advanced',
+      id: '6',
+      title: t('lessons.categories.calculus'),
+      description: t('lessons.description'),
+      level: t('lessons.difficulty.advanced'),
       icon: 'x²',
-      path: '/lessons/algebra'
+      path: '/lessons/6'
     }
   ];
 
   return (
     <LessonsContainer>
-      <PageTitle>Math Lessons</PageTitle>
+      <PageTitle>{t('lessons.title')}</PageTitle>
       <LessonsGrid>
         {lessons.map(lesson => (
           <LessonCard key={lesson.id}>
@@ -154,7 +157,7 @@ const Lessons = () => {
               <LessonDescription>{lesson.description}</LessonDescription>
               <LessonMeta>
                 <LessonLevel>{lesson.level}</LessonLevel>
-                <StartButton to={lesson.path}>Start Lesson</StartButton>
+                <StartButton to={lesson.path}>{t('lessons.startLesson')}</StartButton>
               </LessonMeta>
             </LessonContent>
           </LessonCard>

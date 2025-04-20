@@ -11,39 +11,39 @@ export const useSettings = () => {
 };
 
 export const SettingsProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+  const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
 
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('language') || 'en';
+    const saved = localStorage.getItem('language');
+    return saved || 'en';
   });
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
-    document.body.classList.toggle('dark-mode', isDarkMode);
-  }, [isDarkMode]);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.documentElement.classList.toggle('dark-mode', darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     localStorage.setItem('language', language);
+    document.documentElement.lang = language;
   }, [language]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setDarkMode(prev => !prev);
   };
 
-  const changeLanguage = (lang) => {
-    setLanguage(lang);
+  const value = {
+    darkMode,
+    toggleDarkMode,
+    language,
+    setLanguage
   };
 
   return (
-    <SettingsContext.Provider value={{
-      isDarkMode,
-      toggleDarkMode,
-      language,
-      changeLanguage
-    }}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );
