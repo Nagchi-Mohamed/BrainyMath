@@ -50,8 +50,7 @@ export const LessonsProvider = ({ children }) => {
 
   const getLessonById = async (id) => {
     if (!id || id === 'undefined') {
-      console.error('Invalid lesson ID');
-      return null;
+      throw new Error('Invalid lesson ID');
     }
 
     try {
@@ -72,12 +71,20 @@ export const LessonsProvider = ({ children }) => {
         throw new Error('Lesson not found');
       }
       
+      // Update lessons state with the new lesson
+      setLessons(prev => {
+        const exists = prev.some(lesson => lesson.id === id);
+        if (!exists) {
+          return [...prev, response.data];
+        }
+        return prev;
+      });
+      
       return response.data;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch lesson';
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch lesson';
       setError(errorMessage);
-      console.error('Error fetching lesson:', err);
-      return null;
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

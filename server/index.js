@@ -16,7 +16,7 @@ const app = express();
 app.use(helmet());
 app.use(express.json());
 
-// Trust proxy for rate limiter
+// Trust proxy headers (add before rate limiter)
 app.set('trust proxy', 1);
 
 // CORS configuration
@@ -31,19 +31,17 @@ const corsOptions = {
 // Apply CORS
 app.use(cors(corsOptions));
 
-// Configure rate limiter
+// Rate limiter configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-  trustProxy: process.env.NODE_ENV === 'development', // Trust proxy in development
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
     // Skip rate limiting for development hot reload requests
-    if (process.env.NODE_ENV === 'development') {
-      return req.path.includes('hot-update.json') || 
-             req.path.includes('logo192.png') ||
-             req.path.includes('favicon.ico');
+    if (process.env.NODE_ENV === 'development' && req.path.includes('hot-update')) {
+      return true;
     }
     return false;
   }

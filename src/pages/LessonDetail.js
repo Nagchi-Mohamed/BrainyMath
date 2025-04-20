@@ -124,29 +124,39 @@ const LessonDetail = () => {
       }
 
       if (!id || id === 'undefined') {
-        toast.error('Invalid lesson ID');
+        setLessonError('Invalid lesson ID');
+        setIsLoading(false);
         navigate('/lessons');
         return;
       }
 
       try {
         setIsLoading(true);
+        setLessonError(null);
         const lessonData = await getLessonById(id);
+        
         if (!lessonData) {
-          toast.error('Lesson not found');
-          navigate('/lessons');
+          setLessonError('Lesson not found');
+          setIsLoading(false);
           return;
         }
+        
         setLesson(lessonData);
       } catch (error) {
+        setLessonError(error.message || 'Failed to load lesson');
         toast.error(error.message || 'Failed to load lesson');
-        navigate('/lessons');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLesson();
+    // Only fetch if we have a valid ID
+    if (id && id !== 'undefined') {
+      fetchLesson();
+    } else {
+      setIsLoading(false);
+      setLessonError('Invalid lesson ID');
+    }
   }, [id, token, getLessonById, navigate]);
 
   const handleSubmit = async (e) => {
