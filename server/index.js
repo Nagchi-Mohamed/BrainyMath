@@ -1,13 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 // Load environment variables
 dotenv.config();
+
+const { sequelize, testConnection } = require('./config/database.js');
+import * as models from './models/index.js';
 
 // Create Express app
 const app = express();
@@ -56,96 +58,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Create data directory if it doesn't exist
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir);
-}
-
-// File-based data access functions with enhanced error handling
-const readData = (filename) => {
-  const filePath = path.join(dataDir, filename);
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.error(`File ${filename} does not exist`);
-      return null;
-    }
-    const data = fs.readFileSync(filePath, 'utf8');
-    if (!data) {
-      console.error(`File ${filename} is empty`);
-      return null;
-    }
-    const parsedData = JSON.parse(data);
-    return parsedData;
-  } catch (error) {
-    console.error(`Error reading ${filename}:`, error);
-    if (error instanceof SyntaxError) {
-      console.error(`Invalid JSON in ${filename}`);
-    }
-    return null;
-  }
-};
-
-const writeData = (filename, data) => {
-  const filePath = path.join(dataDir, filename);
-  try {
-    // Validate data before writing
-    if (data === undefined || data === null) {
-      throw new Error('Cannot write undefined or null data');
-    }
-    
-    // Create backup before writing
-    if (fs.existsSync(filePath)) {
-      const backupPath = `${filePath}.backup`;
-      fs.copyFileSync(filePath, backupPath);
-    }
-    
-    // Write new data
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    
-    // Verify written data
-    const verifyData = readData(filename);
-    if (!verifyData) {
-      throw new Error('Data verification failed after writing');
-    }
-    
-    return true;
-  } catch (error) {
-    console.error(`Error writing ${filename}:`, error);
-    return false;
-  }
-};
-
-// Initialize data files with validation
-const initializeDataFile = (filename, defaultData) => {
-  const filePath = path.join(dataDir, filename);
-  try {
-    if (!fs.existsSync(filePath)) {
-      if (!writeData(filename, defaultData)) {
-        throw new Error(`Failed to initialize ${filename}`);
-      }
-      console.log(`Initialized ${filename} with default data`);
-    }
-    return filePath;
-  } catch (error) {
-    console.error(`Error initializing ${filename}:`, error);
-    throw error;
-  }
-};
-
-// Initialize data files
-initializeDataFile('users.json', []);
-initializeDataFile('lessons.json', []);
-initializeDataFile('groups.json', []);
-initializeDataFile('forum.json', { categories: [], topics: [], posts: [] });
-initializeDataFile('games.json', []);
-
-// Import routes
-const authRoutes = require('./routes/auth');
-const lessonRoutes = require('./routes/lessons');
-const groupRoutes = require('./routes/groups');
-const forumRoutes = require('./routes/forum');
-const gameRoutes = require('./routes/games');
+import authRoutes from './routes/authRoutes.js';
+import lessonRoutes from './routes/lessonRoutes.js';
+import * as groupRoutes from './routes/groups.js';
+import * as forumRoutes from './routes/forum.js';
+import * as gameRoutes from './routes/games.js';
+import * as userProgressRoutes from './routes/userProgress.js';
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -153,6 +71,7 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/api/progress', userProgressRoutes);
 
 // Request validation middleware
 app.use((req, res, next) => {
@@ -166,6 +85,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
@@ -219,47 +144,48 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const startServer = () => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Available endpoints:');
-    console.log('- GET  /');
-    console.log('- GET  /api/lessons');
-    console.log('- GET  /api/groups');
-    console.log('- GET  /api/forum/categories');
-    console.log('- GET  /api/games');
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`Port ${PORT} is already in use. Please try a different port or close the application using this port.`);
-      process.exit(1);
-    } else {
-      console.error('Server error:', err);
-      process.exit(1);
-    }
-  });
-
-  // Handle graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM received. Shutting down gracefully...');
-    server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
+const startServer = async () => {
+  try {
+    // Test database connection
+    await testConnection();
+    
+    // Sync database models
+    await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    console.log('Database models synchronized');
+    
+    // Start server
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log('Environment:', process.env.NODE_ENV || 'development');
+      console.log('Available endpoints:');
+      console.log('- GET  /');
+      console.log('- GET  /api/lessons');
+      console.log('- GET  /api/groups');
+      console.log('- GET  /api/forum/categories');
+      console.log('- GET  /api/games');
+    }).on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Please try a different port or close the application using this port.`);
+        process.exit(1);
+      } else {
+        console.error('Server error:', err);
+        process.exit(1);
+      }
     });
-  });
+
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received. Shutting down gracefully...');
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 };
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
-  process.exit(1);
-});
-
-// Start server
+// Start the server
 startServer(); 

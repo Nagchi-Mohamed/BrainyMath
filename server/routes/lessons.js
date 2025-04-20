@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const auth = require('../middleware/auth');
+import fs from 'fs';
+import path from 'path';
+import auth from '../middleware/auth.js';
 
 // File-based data access functions
 const readData = (filename) => {
-  const filePath = path.join(__dirname, '..', 'data', filename);
+  const filePath = path.join(new URL('.', import.meta.url).pathname, '..', 'data', filename);
   try {
     const data = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(data);
@@ -17,7 +17,7 @@ const readData = (filename) => {
 };
 
 const writeData = (filename, data) => {
-  const filePath = path.join(__dirname, '..', 'data', filename);
+  const filePath = path.join(new URL('.', import.meta.url).pathname, '..', 'data', filename);
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
     return true;
@@ -356,4 +356,4 @@ router.get('/:id/progress', auth, (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router;

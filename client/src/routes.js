@@ -1,44 +1,31 @@
-import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import LoadingScreen from './components/LoadingScreen';
+// frontend/src/routes.js
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import LessonsPage from './pages/LessonsPage';
+import LessonDetailPage from './pages/LessonDetailPage';
+import NotFoundPage from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Lazy load components
-const Home = lazy(() => import('./pages/Home'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Lessons = lazy(() => import('./pages/Lessons'));
-const LessonDetail = lazy(() => import('./pages/LessonDetail'));
-const Games = lazy(() => import('./pages/Games'));
-const Forum = lazy(() => import('./pages/Forum'));
-const Classroom = lazy(() => import('./pages/Classroom'));
-const Profile = lazy(() => import('./pages/Profile'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-
-function AppRoutes() {
+const AppRoutes = () => {
   return (
-    <Suspense fallback={<LoadingScreen />}>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/lessons" element={<ProtectedRoute><Lessons /></ProtectedRoute>} />
-        <Route path="/lessons/:id" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
-        <Route path="/games" element={<ProtectedRoute><Games /></ProtectedRoute>} />
-        <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
-        <Route path="/classroom" element={<ProtectedRoute><Classroom /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/lessons" element={<LessonsPage />} />
+        <Route path="/lessons/:id" element={<LessonDetailPage />} />
+      </Route>
 
-        {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
-}
+};
 
-export default AppRoutes; 
+export default AppRoutes;

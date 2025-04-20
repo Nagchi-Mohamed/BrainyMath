@@ -1,30 +1,22 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-const Lesson = sequelize.define('Lesson', {
+const Group = sequelize.define('Group', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
-  title: {
+  name: {
     type: DataTypes.STRING,
     allowNull: false
   },
   description: {
     type: DataTypes.TEXT,
     allowNull: true
-  },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  order: {
-    type: DataTypes.INTEGER,
-    allowNull: false
   }
 }, {
   timestamps: true
 });
 
-export default Lesson;
+export default Group;

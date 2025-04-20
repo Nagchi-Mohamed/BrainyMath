@@ -1,21 +1,22 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import LoadingScreen from './LoadingScreen';
+// frontend/src/components/ProtectedRoute.js
+import React, { useContext } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return <LoadingScreen />;
-  }
+const ProtectedRoute = ({ adminOnly = false }) => {
+  const { user } = useContext(AuthContext);
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Not logged in
+    return <Navigate to="/login" replace />;
   }
 
-  return children;
-}
+  if (adminOnly && !user.isAdmin) {
+    // Logged in but not admin
+    return <Navigate to="/" replace />;
+  }
 
-export default ProtectedRoute; 
+  return <Outlet />;
+};
+
+export default ProtectedRoute;

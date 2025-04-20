@@ -1,25 +1,23 @@
+// frontend/src/App.js
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
+import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './routes';
-import { useAuth } from './context/AuthContext';
 
-function App() {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
+const App = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/*" element={<AppRoutes />} />
-      </Routes>
-      <ToastContainer />
-    </>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
-}
+};
 
-export default App; 
+export default App;

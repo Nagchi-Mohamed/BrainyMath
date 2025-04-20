@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-const Lesson = sequelize.define('Lesson', {
+const Forum = sequelize.define('Forum', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -14,17 +14,9 @@ const Lesson = sequelize.define('Lesson', {
   description: {
     type: DataTypes.TEXT,
     allowNull: true
-  },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  order: {
-    type: DataTypes.INTEGER,
-    allowNull: false
   }
 }, {
   timestamps: true
 });
 
-export default Lesson;
+export default Forum;
