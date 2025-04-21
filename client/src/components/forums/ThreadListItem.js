@@ -1,13 +1,21 @@
 import React from 'react';
-import { ListItem, ListItemText } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { ListItem, ListItemText, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const ThreadListItem = ({ thread }) => {
   return (
-    <ListItem button component={RouterLink} to={`/forums/thread/${thread._id}`}>
+    <ListItem button component={Link} to={`/forums/threads/${thread._id}`}>
       <ListItemText
         primary={thread.title}
-        secondary={`Started by ${thread.user.username} on ${new Date(thread.createdAt).toLocaleDateString()}`}
+        secondary={
+          <>
+            <Typography component="span" variant="body2" color="textPrimary">
+              {thread.user.name}
+            </Typography>
+            {' — '}
+            {thread.content.length > 100 ? thread.content.substring(0, 100) + '...' : thread.content}
+          </>
+        }
       />
     </ListItem>
   );

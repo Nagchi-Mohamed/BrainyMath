@@ -11,6 +11,7 @@ import {
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
+const protect = auth;
 
 // List groups with optional search
 router.get('/', listGroups);

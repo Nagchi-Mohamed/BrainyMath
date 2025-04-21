@@ -1,118 +1,108 @@
-import asyncHandler from 'express-async-handler';
 import ForumCategory from '../models/forumCategoryModel.js';
 import ForumThread from '../models/forumThreadModel.js';
 import ForumPost from '../models/forumPostModel.js';
 
-// @desc    Get all forum categories
-// @route   GET /api/forums/categories
-// @access  Public
-const getCategories = asyncHandler(async (req, res) => {
-  const categories = await ForumCategory.find({}).sort({ createdAt: 1 });
-  res.json(categories);
-});
-
-// @desc    Get threads in a category with pagination
-// @route   GET /api/forums/categories/:categoryId/threads
-// @access  Public
-const getThreadsByCategory = asyncHandler(async (req, res) => {
-  const { categoryId } = req.params;
-  const page = Number(req.query.page) || 1;
-  const pageSize = 10;
-
-  const count = await ForumThread.countDocuments({ category: categoryId });
-  const threads = await ForumThread.find({ category: categoryId })
-    .populate('user', 'username')
-    .sort({ pinned: -1, createdAt: -1 })
-    .skip(pageSize * (page - 1))
-    .limit(pageSize);
-
-  res.json({
-    threads,
-    page,
-    pages: Math.ceil(count / pageSize),
-  });
-});
-
-// @desc    Get posts in a thread with pagination
-// @route   GET /api/forums/threads/:threadId/posts
-// @access  Public
-const getPostsByThread = asyncHandler(async (req, res) => {
-  const { threadId } = req.params;
-  const page = Number(req.query.page) || 1;
-  const pageSize = 10;
-
-  const count = await ForumPost.countDocuments({ thread: threadId });
-  const posts = await ForumPost.find({ thread: threadId })
-    .populate('user', 'username')
-    .sort({ createdAt: 1 })
-    .skip(pageSize * (page - 1))
-    .limit(pageSize);
-
-  res.json({
-    posts,
-    page,
-    pages: Math.ceil(count / pageSize),
-  });
-});
-
-// @desc    Create a new thread
-// @route   POST /api/forums/categories/:categoryId/threads
-// @access  Private
-const createThread = asyncHandler(async (req, res) => {
-  const { categoryId } = req.params;
-  const { title, content } = req.body;
-
-  if (!title || !content) {
-    res.status(400);
-    throw new Error('Title and content are required');
+// Get all categories
+export const getCategories = async (req, res) => {
+  try {
+    const categories = await ForumCategory.find({});
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching categories' });
   }
+};
 
-  const thread = new ForumThread({
-    title,
-    category: categoryId,
-    user: req.user._id,
-  });
+// Get threads by category with pagination
+export const getThreadsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-  const createdThread = await thread.save();
+    const threads = await ForumThread.find({ category: categoryId })
+      .sort({ lastReply: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name email');
 
-  const post = new ForumPost({
-    thread: createdThread._id,
-    user: req.user._id,
-    content,
-  });
+    const count = await ForumThread.countDocuments({ category: categoryId });
 
-  await post.save();
-
-  res.status(201).json(createdThread);
-});
-
-// @desc    Create a new post in a thread
-// @route   POST /api/forums/threads/:threadId/posts
-// @access  Private
-const createPost = asyncHandler(async (req, res) => {
-  const { threadId } = req.params;
-  const { content } = req.body;
-
-  if (!content) {
-    res.status(400);
-    throw new Error('Content is required');
+    res.json({ threads, page, pages: Math.ceil(count / limit) });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching threads' });
   }
+};
 
-  const post = new ForumPost({
-    thread: threadId,
-    user: req.user._id,
-    content,
-  });
+// Get posts by thread with pagination
+export const getPostsByThread = async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-  const createdPost = await post.save();
+    const posts = await ForumPost.find({ thread: threadId })
+      .sort({ createdAt: 1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name email');
 
-  res.status(201).json(createdPost);
-});
+    const count = await ForumPost.countDocuments({ thread: threadId });
 
-export {
-  getCategories,
-  getThreadsByCategory,
-  getPostsByThread,
-  createThread,
-  createPost,
+    res.json({ posts, page, pages: Math.ceil(count / limit) });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching posts' });
+  }
+};
+
+// Create a new thread
+export const createThread = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { categoryId } = req.params;
+    const { title, content } = req.body;
+
+    const thread = new ForumThread({
+      title,
+      content,
+      user: userId,
+      category: categoryId,
+      lastReply: Date.now(),
+      postsCount: 0,
+    });
+
+    const createdThread = await thread.save();
+
+    res.status(201).json(createdThread);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating thread' });
+  }
+};
+
+// Create a new post
+export const createPost = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { threadId } = req.params;
+    const { content } = req.body;
+
+    const post = new ForumPost({
+      content,
+      user: userId,
+      thread: threadId,
+    });
+
+    const createdPost = await post.save();
+
+    // Update thread's postsCount and lastReply
+    await ForumThread.findByIdAndUpdate(threadId, {
+      $inc: { postsCount: 1 },
+      lastReply: Date.now(),
+    });
+
+    res.status(201).json(createdPost);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating post' });
+  }
 };

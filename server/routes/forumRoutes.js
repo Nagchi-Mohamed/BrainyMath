@@ -10,6 +10,7 @@ import {
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
+const protect = auth;
 
 // Get all categories
 router.get('/categories', getCategories);

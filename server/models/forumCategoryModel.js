@@ -2,21 +2,10 @@ import mongoose from 'mongoose';
 
 const forumCategorySchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: false,
-      trim: true,
-    },
+    name: { type: String, required: true, unique: true },
+    description: { type: String, default: '' },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const ForumCategory = mongoose.model('ForumCategory', forumCategorySchema);
