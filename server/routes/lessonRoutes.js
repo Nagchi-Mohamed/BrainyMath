@@ -22,11 +22,11 @@ router.post(
   protect,
   admin,
   [
-    body('title', 'Title is required').notEmpty(),
-    body('description', 'Description is required').notEmpty(),
-    body('content', 'Content is required').notEmpty(),
-    body('category', 'Category is required').notEmpty(),
-    body('difficulty', 'Difficulty is required').notEmpty(),
+    body('title', 'Lesson title is required').trim().not().isEmpty(),
+    body('description', 'Description is required').trim().not().isEmpty(),
+    body('content', 'Content is required').not().isEmpty(),
+    body('category', 'Category is required').isIn(['Algebra', 'Geometry', 'Calculus', 'Statistics', 'General']),
+    body('difficulty', 'Difficulty is required').isIn(['Beginner', 'Intermediate', 'Advanced']),
   ],
   createLesson
 );
@@ -36,11 +36,11 @@ router.put(
   protect,
   admin,
   [
-    body('title').optional().notEmpty(),
-    body('description').optional().notEmpty(),
-    body('content').optional().notEmpty(),
-    body('category').optional().notEmpty(),
-    body('difficulty').optional().notEmpty(),
+    body('title').optional().trim().not().isEmpty(),
+    body('description').optional().trim().not().isEmpty(),
+    body('content').optional().not().isEmpty(),
+    body('category').optional().isIn(['Algebra', 'Geometry', 'Calculus', 'Statistics', 'General']),
+    body('difficulty').optional().isIn(['Beginner', 'Intermediate', 'Advanced']),
   ],
   updateLesson
 );

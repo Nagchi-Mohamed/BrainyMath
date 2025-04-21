@@ -23,6 +23,16 @@ const errorHandler = (err, req, res, next) => {
 
   console.error('ERROR STACK:', err.stack); // Log the error stack for debugging
 
+  // Handle Mongoose validation errors specifically
+  if (err.name === 'ValidationError') {
+    const errors = Object.values(err.errors).map(e => e.message);
+    return res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      errors,
+    });
+  }
+
   res.json({
     success: false,
     message: err.message,
