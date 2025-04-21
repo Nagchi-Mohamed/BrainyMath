@@ -1,7 +1,15 @@
+import path from 'path';
+
 // backend/middleware/errorMiddleware.js
 
 // Handles routes that are not found
 const notFound = (req, res, next) => {
+  // Ignore requests for static assets (files with extensions)
+  if (path.extname(req.originalUrl)) {
+    // Let express.static handle this or just send 404 without error
+    res.status(404).end();
+    return;
+  }
   const error = new Error(`Not Found - ${req.originalUrl}`);
   res.status(404);
   next(error); // Pass error to the next middleware (our error handler)

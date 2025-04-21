@@ -1,11 +1,11 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
 }
 
-module.exports = (req, res, next) => {
+const auth = (req, res, next) => {
   try {
     // Get token from header
     const authHeader = req.header('Authorization');
@@ -76,4 +76,6 @@ module.exports = (req, res, next) => {
       message: 'Internal server error during authentication' 
     });
   }
-}; 
+};
+
+export default auth;

@@ -1,5 +1,5 @@
-const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../config/database.js';
 
 class UserProgress extends Model {}
 
@@ -64,4 +64,4 @@ UserProgress.init({
   ]
 });
 
-module.exports = UserProgress; 
+export default UserProgress;

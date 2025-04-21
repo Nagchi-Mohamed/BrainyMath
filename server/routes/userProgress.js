@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as userProgressController from '../controllers/userProgressController.js';
+import auth from '../middleware/auth.js';
+
 const router = express.Router();
-const userProgressController = require('../controllers/userProgressController');
-const auth = require('../middleware/auth');
 
 // All routes require authentication
 router.use(auth);
@@ -17,3 +18,5 @@ router.post('/update', userProgressController.updateProgress);
 
 // Get overall progress statistics
 router.get('/stats', userProgressController.getProgressStats);
+
+export default router;

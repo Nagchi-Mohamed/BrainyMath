@@ -1,9 +1,9 @@
-const UserProgress = require('../models/UserProgress');
-const Lesson = require('../models/Lesson');
-const { sequelize } = require('sequelize');
+import UserProgress from '../models/UserProgress.js';
+import Lesson from '../models/Lesson.js';
+import { sequelize } from '../config/database.js';
 
 // Get progress for a specific user
-exports.getUserProgress = async (req, res) => {
+export const getUserProgress = async (req, res) => {
   try {
     const progress = await UserProgress.findAll({
       where: { userId: req.user.id },
@@ -21,7 +21,7 @@ exports.getUserProgress = async (req, res) => {
 };
 
 // Get progress for a specific lesson
-exports.getLessonProgress = async (req, res) => {
+export const getLessonProgress = async (req, res) => {
   try {
     const progress = await UserProgress.findOne({
       where: {
@@ -46,7 +46,7 @@ exports.getLessonProgress = async (req, res) => {
 };
 
 // Update progress for a lesson
-exports.updateProgress = async (req, res) => {
+export const updateProgress = async (req, res) => {
   try {
     const { lessonId, status, score } = req.body;
     
@@ -81,7 +81,7 @@ exports.updateProgress = async (req, res) => {
 };
 
 // Get user's overall progress statistics
-exports.getProgressStats = async (req, res) => {
+export const getProgressStats = async (req, res) => {
   try {
     const stats = await UserProgress.findAll({
       where: { userId: req.user.id },

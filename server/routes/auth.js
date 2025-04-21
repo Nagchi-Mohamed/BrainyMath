@@ -1,13 +1,14 @@
-const express = require('express');
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
+
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
 
 // File-based data access functions
 const readData = (filename) => {
-  const filePath = path.join(__dirname, '..', 'data', filename);
+  const filePath = path.join(process.cwd(), 'server', 'data', filename);
   try {
     const data = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(data);
@@ -18,7 +19,7 @@ const readData = (filename) => {
 };
 
 const writeData = (filename, data) => {
-  const filePath = path.join(__dirname, '..', 'data', filename);
+  const filePath = path.join(process.cwd(), 'server', 'data', filename);
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
     return true;
@@ -34,7 +35,7 @@ const mockUsers = [
     id: '1',
     name: 'John Doe',
     email: 'john@example.com',
-    password: '$2a$10$X7UrE9N9Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z', // "password123"
+    password: '$2a$10$X7UrE9N9Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z', // "password123"
     role: 'student',
     createdAt: new Date().toISOString()
   },
@@ -42,7 +43,7 @@ const mockUsers = [
     id: '2',
     name: 'Jane Smith',
     email: 'jane@example.com',
-    password: '$2a$10$X7UrE9N9Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z', // "password123"
+    password: '$2a$10$X7UrE9N9Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z.1Z', // "password123"
     role: 'teacher',
     createdAt: new Date().toISOString()
   }
@@ -276,4 +277,4 @@ router.get('/me', (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router;
