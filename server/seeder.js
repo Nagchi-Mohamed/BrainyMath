@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 import Lesson from './models/Lesson.js';
 import Progress from './models/UserProgress.js';
@@ -16,18 +17,18 @@ const seedData = async () => {
     await Lesson.deleteMany();
     await Progress.deleteMany();
 
-    // Create sample users
+    // Create sample users with hashed passwords
     const users = [
       {
         name: 'Admin User',
         email: 'admin@example.com',
-        password: 'admin123',
+        password: bcrypt.hashSync('admin123', 10),
         isAdmin: true,
       },
       {
         name: 'Test User',
         email: 'test@example.com',
-        password: 'test123',
+        password: bcrypt.hashSync('test123', 10),
       },
     ];
 
@@ -63,4 +64,25 @@ const seedData = async () => {
   }
 };
 
-seedData();
+const destroyData = async () => {
+  try {
+    await connectDB();
+
+    // Clear existing data
+    await User.deleteMany();
+    await Lesson.deleteMany();
+    await Progress.deleteMany();
+
+    console.log('Data destroyed successfully');
+    process.exit();
+  } catch (error) {
+    console.error('Error destroying data:', error);
+    process.exit(1);
+  }
+};
+
+if (process.argv[2] === '-d') {
+  destroyData();
+} else {
+  seedData();
+}

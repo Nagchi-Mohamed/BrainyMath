@@ -146,13 +146,38 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
+  const updateUserProfile = async (updatedData) => {
+    try {
+      const response = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(updatedData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user profile');
+      }
+
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
     error,
     login,
     register,
-    logout
+    logout,
+    updateUserProfile
   };
 
   return (
@@ -162,4 +187,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext; 
+export default AuthContext;

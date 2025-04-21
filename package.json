@@ -13,7 +13,9 @@
     "eject": "cd client && npm run eject",
     "install-all": "npm install && cd client && npm install",
     "db:migrate": "sequelize-cli db:migrate",
-    "db:seed": "sequelize-cli db:seed:all"
+    "db:seed": "sequelize-cli db:seed:all",
+    "data:import": "node server/seeder.js",
+    "data:destroy": "node server/seeder.js -d"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",

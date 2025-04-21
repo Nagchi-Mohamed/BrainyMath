@@ -181,4 +181,67 @@ const Games = () => {
   );
 };
 
-export default Games; 
+export default Games;
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Box, Typography, List, ListItem, ListItemText, CircularProgress, Alert } from '@mui/material';
+import axios from 'axios';
+
+const GamesPage = () => {
+  const [quizzes, setQuizzes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const { data } = await axios.get('/api/games/quizzes');
+        setQuizzes(data);
+      } catch (err) {
+        setError('Failed to load quizzes.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Educational Games
+      </Typography>
+      {quizzes.length === 0 ? (
+        <Typography variant="body1">No quizzes available.</Typography>
+      ) : (
+        <List>
+          {quizzes.map((quiz) => (
+            <ListItem key={quiz._id} component={Link} to={`/games/quizzes/${quiz._id}`} button>
+              <ListItemText primary={quiz.title} secondary={quiz.description} />
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Box>
+  );
+};
+
+export default GamesPage;

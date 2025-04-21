@@ -60,17 +60,17 @@ app.use((req, res, next) => {
 
 import authRoutes from './routes/authRoutes.js';
 import lessonRoutes from './routes/lessonRoutes.js';
-import * as groupRoutes from './routes/groups.js';
-import * as forumRoutes from './routes/forum.js';
-import * as gameRoutes from './routes/games.js';
-import * as userProgressRoutes from './routes/userProgress.js';
+import groupRoutes from './routes/groupRoutes.js';
+import forumRoutes from './routes/forumRoutes.js';
+import gamesRoutes from './routes/games.js';
+import userProgressRoutes from './routes/userProgress.js';
 
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/forum', forumRoutes);
-app.use('/api/games', gameRoutes);
+app.use('/api/games', gamesRoutes);
 app.use('/api/progress', userProgressRoutes);
 
 // Request validation middleware
@@ -188,4 +188,4 @@ const startServer = async () => {
 };
 
 // Start the server
-startServer(); 
+startServer();
