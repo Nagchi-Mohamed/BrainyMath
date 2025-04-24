@@ -1,111 +1,71 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Container,
-  Typography,
-  List,
-  CircularProgress,
-  TextField,
-  Button,
-  Box,
-} from '@mui/material';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Loader from '../components/Loader';
+import Message from '../components/Message';
 import GroupListItem from '../components/groups/GroupListItem';
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
-  const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupDescription, setNewGroupDescription] = useState('');
-  const [creating, setCreating] = useState(false);
-
-  const fetchGroups = async (keyword = '') => {
-    try {
-      setLoading(true);
-      const { data } = await axios.get(`/api/groups?keyword=${keyword}`);
-      setGroups(data);
-    } catch (err) {
-      setError('Failed to load groups');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchGroups = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data } = await api.get('/groups');
+        setGroups(data);
+      } catch (err) {
+        setError('Failed to load groups.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchGroups();
   }, []);
 
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchGroups(search);
-  };
-
-  const handleCreateGroup = async () => {
-    if (!newGroupName.trim()) return;
-    try {
-      setCreating(true);
-      await axios.post('/api/groups', {
-        name: newGroupName,
-        description: newGroupDescription,
-      });
-      setNewGroupName('');
-      setNewGroupDescription('');
-      fetchGroups();
-    } catch (err) {
-      setError('Failed to create group');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  if (loading) return <CircularProgress />;
-  if (error) return <Typography color="error">{error}</Typography>;
-
   return (
     <Container>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom>
         Study Groups
       </Typography>
-      <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 2 }}>
-        <TextField
-          label="Search Groups"
-          value={search}
-          onChange={handleSearchChange}
-          fullWidth
-        />
-      </Box>
-      <List>
-        {groups.map((group) => (
-          <GroupListItem key={group._id} group={group} />
-        ))}
-      </List>
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6">Create New Group</Typography>
-        <TextField
-          label="Group Name"
-          value={newGroupName}
-          onChange={(e) => setNewGroupName(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Description"
-          value={newGroupDescription}
-          onChange={(e) => setNewGroupDescription(e.target.value)}
-          fullWidth
-          multiline
-          rows={3}
-          sx={{ mb: 2 }}
-        />
-        <Button variant="contained" onClick={handleCreateGroup} disabled={creating}>
-          Create Group
-        </Button>
-      </Box>
+
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <Message severity="error">{error}</Message>
+      ) : (
+        <Grid container spacing={4}>
+          {groups.map((group) => (
+            <Grid item key={group._id} xs={12} sm={6} md={4}>
+              <GroupListItem group={group} />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {isAuthenticated && (
+        <Box sx={{ textAlign: 'center', mt: 4 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/groups/create')}
+          >
+            Create New Group
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 };

@@ -1,217 +1,154 @@
 # BrainyMath - Interactive Math Learning Platform
 
-BrainyMath is a modern web application designed to make mathematics learning engaging, interactive, and accessible for students of all ages. The platform combines lessons, games, and social learning features to create a comprehensive math education experience.
+BrainyMath is an interactive web application designed to help students learn and practice math concepts through engaging games and exercises.
 
-## 🌟 Features
+## Features
 
-### 📚 Interactive Lessons
+- **Interactive Math Games**: Addition, subtraction, multiplication, and division games with adaptive difficulty
+- **Learning Resources**: Detailed explanations of math concepts with examples and practice problems
+- **User Progress Tracking**: Dashboard to track performance metrics and improvements
+- **Authentication**: User accounts to save progress and customize learning experience
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-- Structured math lessons for different skill levels
-- Step-by-step problem solving guides
-- Visual explanations and examples
-- Progress tracking and assessments
+## Project Structure
 
-### 🎮 Math Games
+The project follows a modern React application architecture with feature-based organization:
 
-- Educational games that reinforce mathematical concepts
-- Different difficulty levels
-- Real-time feedback and scoring
-- Engaging animations and interactions
+```
+src/
+├── assets/           # Fonts, images, etc.
+├── components/       # Reusable UI components
+├── contexts/         # Auth, game state contexts
+├── features/         # Feature modules
+│   ├── auth/         # Authentication flows
+│   ├── dashboard/    # User dashboard
+│   ├── games/        # All game modes
+│   └── learning/     # Educational content
+├── hooks/            # Custom hooks
+├── lib/              # Utilities/helpers
+├── pages/            # Page components
+├── styles/           # Global styles
+└── App.js            # Main app entry
+```
 
-### 👥 Study Groups
+## Technology Stack
 
-- Create and join study groups
-- Virtual classrooms for collaborative learning
-- Real-time chat and resource sharing
-- Schedule study sessions
+- **Frontend**:
 
-### 💬 Forum
+  - React.js with hooks and context for state management
+  - React Router for navigation
+  - CSS variables for consistent theming
 
-- Ask questions and share knowledge
-- Topic-based discussions
-- Expert moderation
-- Community support
+- **Authentication**:
 
-### 🌓 User Experience
+  - Firebase Authentication with email/password and Google sign-in
 
-- Dark/Light mode support
-- Multi-language interface (English, French, Spanish)
-- Responsive design for all devices
-- Accessible interface
+- **Backend**:
+  - Node.js with Express
+  - MongoDB for data storage
+  - RESTful API architecture
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14.0.0 or higher)
-- npm (v6.0.0 or higher)
+- Node.js 14.x or higher
+- npm 6.x or higher
 
 ### Installation
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/Nagchi-Mohamed/BrainyMath.git
-cd BrainyMath
-```
+   ```
+   git clone https://github.com/yourusername/brainymath.git
+   cd brainymath
+   ```
 
 2. Install dependencies:
 
-```bash
-npm install
-cd client && npm install
-cd ../server && npm install
-```
+   ```
+   npm install
+   ```
 
-3. Start the development server:
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
 
-```bash
-# In the root directory
-npm run dev
-```
+   ```
+   REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+   REACT_APP_FIREBASE_PROJECT_ID=your_firebase_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_firebase_app_id
+   ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Start the development server:
 
-## 🛠️ Built With
+   ```
+   npm start
+   ```
 
-- **React** - Frontend framework
-- **Express** - Backend framework
-- **MongoDB** - Database
-- **Styled Components** - CSS-in-JS styling
-- **React Router** - Navigation and routing
-- **React Icons** - Icon library
-- **Context API** - State management
-- **Local Storage** - User preferences persistence
+5. Open [http://localhost:3000](http://localhost:3000) to view the app in your browser.
 
-## 📁 Project Structure
+### Backend Setup
 
-```
-brainymath/
-├── client/
-│   ├── public/
-│   │   ├── images/
-│   │   │   └── Logo.svg
-│   │   └── favicon.ico
-│   └── src/
-│       ├── components/
-│       │   ├── Navbar.js
-│       │   ├── Footer.js
-│       │   └── LoadingScreen.js
-│       ├── pages/
-│       │   ├── Home.js
-│       │   ├── Lessons.js
-│       │   ├── Games.js
-│       │   ├── Groups.js
-│       │   ├── Forum.js
-│       │   ├── Classroom.js
-│       │   ├── Profile.js
-│       │   └── NotFound.js
-│       ├── context/
-│       │   └── SettingsContext.js
-│       ├── hooks/
-│       │   └── useTranslation.js
-│       ├── styles/
-│       │   └── GlobalStyle.js
-│       ├── theme/
-│       │   └── index.js
-│       ├── translations/
-│       │   └── index.js
-│       ├── routes.js
-│       └── App.js
-├── server/
-│   ├── routes/
-│   │   ├── auth.js
-│   │   ├── lessons.js
-│   │   ├── games.js
-│   │   ├── groups.js
-│   │   └── forum.js
-│   ├── data/
-│   │   └── .gitkeep
-│   └── index.js
-├── package.json
-└── README.md
-```
+1. Navigate to the server directory:
 
-## 🎨 Theme System
+   ```
+   cd server
+   ```
 
-The application uses a comprehensive theme system with:
+2. Install server dependencies:
 
-- Light and dark mode support
-- Consistent color palette
-- Typography scale
-- Spacing system
-- Shadow variations
-- Border radius options
-- Transition timings
-- Responsive breakpoints
+   ```
+   npm install
+   ```
 
-## 🌐 Internationalization
+3. Set up environment variables:
+   Create a `.env` file in the server directory with:
 
-The application supports multiple languages:
+   ```
+   MONGO_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret
+   PORT=5000
+   ```
 
-- English (default)
-- French
-- Spanish
+4. Start the server:
+   ```
+   npm run server
+   ```
 
-Language settings are persisted in local storage and can be changed through the UI.
+## Deployment
 
-## 📱 Responsive Design
+### Frontend
 
-The application is fully responsive and optimized for:
+1. Build the production version:
 
-- Desktop computers
-- Tablets
-- Mobile phones
+   ```
+   npm run build
+   ```
 
-## 🔒 Security
+2. Deploy to hosting service of choice (Netlify, Vercel, Firebase Hosting, etc.)
 
-- Secure user authentication
-- Protected routes
-- Data encryption
-- Regular security updates
+### Backend
 
-## 🧪 Testing
+1. Deploy to a Node.js hosting service (Heroku, DigitalOcean, AWS, etc.)
 
-Run the test suite:
-
-```bash
-npm test
-```
-
-## 📦 Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 👥 Authors
+## Acknowledgments
 
-- Nagchi Mohamed - Initial work
-
-## 🙏 Acknowledgments
-
-- Math education experts
-- Open source community
-- Beta testers and users
-
-## 📞 Support
-
-For support, email support@brainymath.com or join our community forum.
-
----
-
-Made with ❤️ by the BrainyMath Team
+- [React.js](https://reactjs.org/) - JavaScript library for building user interfaces
+- [Firebase](https://firebase.google.com/) - Authentication and hosting
+- [Express](https://expressjs.com/) - Node.js web application framework
+- [MongoDB](https://www.mongodb.com/) - Database

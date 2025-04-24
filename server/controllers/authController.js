@@ -11,18 +11,24 @@ const registerUser = asyncHandler(async (req, res) => {
   // 1. Validation Check (using express-validator)
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400); // Bad Request
-    throw new Error(errors.array()[0].msg);
+    const formattedErrors = errors.array().map(error => ({
+      msg: error.msg === 'Password must be 6 or more characters' 
+        ? 'Password must be at least 6 characters' 
+        : error.msg,
+      path: error.path,
+      location: error.location,
+      type: error.type
+    }));
+    return res.status(400).json({ errors: formattedErrors });
   }
 
-  const { name, email, password } = req.body;
+  const { name, email, password, isAdmin } = req.body;
 
   // 2. Check if user already exists
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ email }).collation({ locale: 'en', strength: 2 });
 
   if (userExists) {
-    res.status(400); // Bad Request
-    throw new Error('User with this email already exists');
+    return res.status(400).json({ error: 'User with this email already exists' });
   }
 
   // 3. Create new user (password hashing handled by model pre-save hook)
@@ -30,21 +36,23 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    isAdmin: isAdmin || false
   });
 
   // 4. Respond with user data and token
   if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
+    return res.status(201).json({
       token: generateToken(user._id),
-      createdAt: user.createdAt,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+      }
     });
   } else {
-    res.status(400);
-    throw new Error('Invalid user data');
+    return res.status(400).json({ error: 'Invalid user data' });
   }
 });
 
@@ -54,26 +62,26 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400);
-    throw new Error(errors.array()[0].msg);
+    return res.status(400).json({ errors: errors.array() });
   }
 
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).collation({ locale: 'en', strength: 2 });
 
   if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
+    return res.json({
       token: generateToken(user._id),
-      createdAt: user.createdAt,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
+      }
     });
   } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
+    return res.status(401).json({ error: 'Invalid email or password' });
   }
 });
 
@@ -93,8 +101,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       updatedAt: user.updatedAt,
     });
   } else {
-    res.status(404);
-    throw new Error('User not found');
+    res.status(404).json({ error: 'User not found' });
   }
 });
 
@@ -102,15 +109,34 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const formattedErrors = errors.array();
+    // If there's a password error, return it in the expected format
+    const passwordError = formattedErrors.find(error => error.path === 'password');
+    if (passwordError) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+    return res.status(400).json({ errors: formattedErrors });
+  }
+
   const user = await User.findById(req.user._id);
 
   if (user) {
+    // Check if email is being updated and if it's already in use
+    if (req.body.email && req.body.email !== user.email) {
+      const emailExists = await User.findOne({ email: req.body.email }).collation({ locale: 'en', strength: 2 });
+      if (emailExists) {
+        return res.status(400).json({ error: 'Email already associated with another account.' });
+      }
+    }
+
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    
     if (req.body.password) {
       if (req.body.password.length < 6) {
-        res.status(400);
-        throw new Error('Password must be at least 6 characters');
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
       }
       user.password = req.body.password;
     }
@@ -127,16 +153,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         updatedAt: updatedUser.updatedAt,
       });
     } catch (error) {
-      if (error.code === 11000) {
-        res.status(400);
-        throw new Error('Email already associated with another account.');
-      }
-      res.status(400);
-      throw new Error(error.message || 'Could not update profile');
+      res.status(400).json({ error: error.message || 'Could not update profile' });
     }
   } else {
-    res.status(404);
-    throw new Error('User not found');
+    res.status(404).json({ error: 'User not found' });
   }
 });
 
@@ -158,14 +178,12 @@ const deleteUser = asyncHandler(async (req, res) => {
 
   if (user) {
     if (user.isAdmin && req.user._id.equals(user._id)) {
-      res.status(400);
-      throw new Error('Cannot delete admin account');
+      return res.status(400).json({ error: 'Cannot delete admin account' });
     }
-    await user.remove();
-    res.json({ message: 'User removed successfully' });
+    await user.deleteOne();
+    res.json({ message: 'User removed' });
   } else {
-    res.status(404);
-    throw new Error('User not found');
+    res.status(404).json({ error: 'User not found' });
   }
 });
 

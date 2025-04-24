@@ -2,9 +2,8 @@ import mongoose from 'mongoose';
 
 const forumPostSchema = new mongoose.Schema(
   {
-    thread: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ForumThread',
+    content: {
+      type: String,
       required: true,
     },
     user: {
@@ -12,17 +11,10 @@ const forumPostSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    content: {
-      type: String,
+    thread: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ForumThread',
       required: true,
-      trim: true,
-    },
-    edited: {
-      type: Boolean,
-      default: false,
-    },
-    editedAt: {
-      type: Date,
     },
   },
   {

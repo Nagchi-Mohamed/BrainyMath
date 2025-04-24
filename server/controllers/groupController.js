@@ -1,184 +1,173 @@
 import asyncHandler from 'express-async-handler';
+import { validationResult } from 'express-validator';
 import Group from '../models/groupModel.js';
 import GroupMembership from '../models/groupMembershipModel.js';
 
-// @desc    List all groups with optional search
+// @desc    Get all groups
 // @route   GET /api/groups
-// @access  Public
-const listGroups = asyncHandler(async (req, res) => {
-  const keyword = req.query.keyword
-    ? {
-        name: { $regex: req.query.keyword, $options: 'i' },
-      }
-    : {};
-
-  const groups = await Group.find({ ...keyword }).sort({ createdAt: -1 });
+// @access  Private
+export const getAllGroups = asyncHandler(async (req, res) => {
+  const groups = await Group.find({}).populate('creator', 'name email');
   res.json(groups);
 });
 
-// @desc    Get group details including members
+// @desc    Get group by ID
 // @route   GET /api/groups/:id
-// @access  Public
-const getGroupDetails = asyncHandler(async (req, res) => {
-  const group = await Group.findById(req.params.id);
-  if (!group) {
+// @access  Private
+export const getGroupById = asyncHandler(async (req, res) => {
+  const group = await Group.findById(req.params.id)
+    .populate('creator', 'name email')
+    .populate('members', 'name email');
+
+  if (group) {
+    res.json(group);
+  } else {
     res.status(404);
     throw new Error('Group not found');
   }
-
-  const members = await GroupMembership.find({ group: group._id }).populate('user', 'username email');
-  res.json({ group, members });
 });
 
 // @desc    Create a new group
 // @route   POST /api/groups
-// @access  Private
-const createGroup = asyncHandler(async (req, res) => {
+// @access  Private/Admin
+export const createGroup = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
-  if (!name) {
+  if (!name || !description) {
     res.status(400);
-    throw new Error('Group name is required');
-  }
-
-  const existingGroup = await Group.findOne({ name });
-  if (existingGroup) {
-    res.status(400);
-    throw new Error('Group name already exists');
+    throw new Error('Please provide name and description');
   }
 
   const group = new Group({
     name,
     description,
-    owner: req.user._id,
+    creator: req.user._id,
+    members: [req.user._id],
   });
 
   const createdGroup = await group.save();
-
-  // Add owner as admin member
-  const membership = new GroupMembership({
-    user: req.user._id,
-    group: createdGroup._id,
-    role: 'admin',
-  });
-  await membership.save();
-
   res.status(201).json(createdGroup);
 });
 
 // @desc    Join a group
-// @route   POST /api/groups/:id/join
+// @route   POST /api/groups/:groupId/join
 // @access  Private
-const joinGroup = asyncHandler(async (req, res) => {
-  const groupId = req.params.id;
-  const userId = req.user._id;
-
-  const group = await Group.findById(groupId);
+export const joinGroup = asyncHandler(async (req, res) => {
+  const group = await Group.findById(req.params.groupId);
   if (!group) {
     res.status(404);
     throw new Error('Group not found');
   }
 
-  const existingMembership = await GroupMembership.findOne({ group: groupId, user: userId });
+  const existingMembership = await GroupMembership.findOne({
+    user: req.user._id,
+    group: req.params.groupId,
+  });
+
   if (existingMembership) {
     res.status(400);
     throw new Error('Already a member of this group');
   }
 
-  const membership = new GroupMembership({
-    user: userId,
-    group: groupId,
-    role: 'member',
+  await GroupMembership.create({
+    user: req.user._id,
+    group: req.params.groupId,
   });
 
-  await membership.save();
-
-  res.status(201).json({ message: 'Joined group successfully' });
+  res.status(200).json({ message: 'Successfully joined the group' });
 });
 
 // @desc    Leave a group
-// @route   POST /api/groups/:id/leave
+// @route   DELETE /api/groups/:groupId/leave
 // @access  Private
-const leaveGroup = asyncHandler(async (req, res) => {
-  const groupId = req.params.id;
-  const userId = req.user._id;
+export const leaveGroup = asyncHandler(async (req, res) => {
+  const membership = await GroupMembership.findOne({
+    user: req.user._id,
+    group: req.params.groupId,
+  });
 
-  const membership = await GroupMembership.findOne({ group: groupId, user: userId });
   if (!membership) {
-    res.status(400);
+    res.status(404);
     throw new Error('Not a member of this group');
   }
 
-  // Prevent owner from leaving group
-  const group = await Group.findById(groupId);
-  if (group.owner.toString() === userId.toString()) {
+  const group = await Group.findById(req.params.groupId);
+  if (group.owner.toString() === req.user._id.toString()) {
     res.status(400);
     throw new Error('Group owner cannot leave the group');
   }
 
   await membership.remove();
-
-  res.json({ message: 'Left group successfully' });
+  res.status(200).json({ message: 'Successfully left the group' });
 });
 
-// @desc    Manage group members (promote/demote/remove)
-// @route   PUT /api/groups/:groupId/members/:memberId
-// @access  Private (admin only)
-const manageMember = asyncHandler(async (req, res) => {
-  const { groupId, memberId } = req.params;
-  const { action, role } = req.body; // action: 'promote', 'demote', 'remove'
+// @desc    Get group members
+// @route   GET /api/groups/:groupId/members
+// @access  Private
+export const getGroupMembers = asyncHandler(async (req, res) => {
+  const memberships = await GroupMembership.find({ group: req.params.groupId }).populate('user', 'name email');
+  res.status(200).json(memberships);
+});
 
-  const group = await Group.findById(groupId);
-  if (!group) {
-    res.status(404);
-    throw new Error('Group not found');
-  }
+// @desc    Remove a group member
+// @route   DELETE /api/groups/:groupId/members/:userId
+// @access  Private (Admin/Owner only)
+export const removeGroupMember = asyncHandler(async (req, res) => {
+  const { groupId, userId } = req.params;
 
-  // Check if requester is admin
-  const requesterMembership = await GroupMembership.findOne({ group: groupId, user: req.user._id });
+  const requesterMembership = await GroupMembership.findOne({
+    user: req.user._id,
+    group: groupId,
+  });
+
   if (!requesterMembership || requesterMembership.role !== 'admin') {
     res.status(403);
-    throw new Error('Not authorized');
+    throw new Error('Not authorized to remove members');
   }
 
-  const memberMembership = await GroupMembership.findOne({ group: groupId, user: memberId });
-  if (!memberMembership) {
+  const targetMembership = await GroupMembership.findOne({
+    user: userId,
+    group: groupId,
+  });
+
+  if (!targetMembership) {
     res.status(404);
-    throw new Error('Member not found in group');
+    throw new Error('Member not found');
   }
 
-  if (action === 'remove') {
-    // Prevent removing owner
-    if (memberId === group.owner.toString()) {
-      res.status(400);
-      throw new Error('Cannot remove group owner');
-    }
-    await memberMembership.remove();
-    res.json({ message: 'Member removed' });
-  } else if (action === 'promote' && role === 'admin') {
-    memberMembership.role = 'admin';
-    await memberMembership.save();
-    res.json({ message: 'Member promoted to admin' });
-  } else if (action === 'demote' && role === 'member') {
-    // Prevent demoting owner
-    if (memberId === group.owner.toString()) {
-      res.status(400);
-      throw new Error('Cannot demote group owner');
-    }
-    memberMembership.role = 'member';
-    await memberMembership.save();
-    res.json({ message: 'Member demoted to member' });
-  } else {
-    res.status(400);
-    throw new Error('Invalid action or role');
-  }
+  await targetMembership.remove();
+  res.status(200).json({ message: 'Member removed successfully' });
 });
 
-export {
-  listGroups,
-  getGroupDetails,
-  createGroup,
-  joinGroup,
-  leaveGroup,
-  manageMember,
-};
+// @desc    Promote a group member
+// @route   POST /api/groups/:groupId/members/:userId/promote
+// @access  Private (Admin/Owner only)
+export const promoteGroupMember = asyncHandler(async (req, res) => {
+  const { groupId, userId } = req.params;
+
+  const requesterMembership = await GroupMembership.findOne({
+    user: req.user._id,
+    group: groupId,
+  });
+
+  if (!requesterMembership || requesterMembership.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to promote members');
+  }
+
+  const targetMembership = await GroupMembership.findOne({
+    user: userId,
+    group: groupId,
+  });
+
+  if (!targetMembership) {
+    res.status(404);
+    throw new Error('Member not found');
+  }
+
+  targetMembership.role = 'admin';
+  await targetMembership.save();
+
+  res.status(200).json({ message: 'Member promoted to admin successfully' });
+}
+);

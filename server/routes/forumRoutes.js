@@ -2,42 +2,54 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   getCategories,
+  createCategory,
   getThreadsByCategory,
-  getPostsByThread,
   createThread,
+  getPostsByThread,
   createPost,
+  updateThread,
+  deleteThread,
+  updatePost,
+  deletePost,
 } from '../controllers/forumController.js';
-import auth from '../middleware/auth.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-const protect = auth;
 
-// Get all categories
-router.get('/categories', getCategories);
+// Forum Categories
+router.route('/categories')
+  .get(getCategories) // Public
+  .post(protect, admin, createCategory); // Admin only
 
-// Get threads in a category with pagination
-router.get('/categories/:categoryId/threads', getThreadsByCategory);
+// Threads by Category
+router.route('/categories/:categoryId/threads')
+  .get(getThreadsByCategory) // Public
+  .post(
+    protect, // Authenticated users only
+    [
+      body('title').notEmpty().withMessage('Title is required'),
+      body('content').notEmpty().withMessage('Content is required'),
+    ],
+    createThread
+  );
 
-// Get posts in a thread with pagination
-router.get('/threads/:threadId/posts', getPostsByThread);
+// Posts by Thread
+router.route('/threads/:threadId/posts')
+  .get(getPostsByThread) // Public
+  .post(
+    protect, // Authenticated users only
+    [
+      body('content').notEmpty().withMessage('Content is required'),
+    ],
+    createPost
+  );
 
-// Create a new thread in a category (protected)
-router.post(
-  '/categories/:categoryId/threads',
-  protect,
-  [
-    body('title').notEmpty().withMessage('Title is required'),
-    body('content').notEmpty().withMessage('Content is required'),
-  ],
-  createThread
-);
+router.route('/threads/:threadId')
+  .put(protect, updateThread) // Update a thread
+  .delete(protect, admin, deleteThread); // Delete a thread (Admin only)
 
-// Create a new post in a thread (protected)
-router.post(
-  '/threads/:threadId/posts',
-  protect,
-  [body('content').notEmpty().withMessage('Content is required')],
-  createPost
-);
+router.route('/posts/:postId')
+  .put(protect, updatePost) // Update a post
+  .delete(protect, deletePost); // Delete a post
 
 export default router;

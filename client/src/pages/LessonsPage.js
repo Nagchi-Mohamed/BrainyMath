@@ -1,10 +1,8 @@
-// frontend/src/pages/LessonsPage.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Grid, Card, CardContent, CardActionArea } from '@mui/material';
+import { Typography, Grid, Card, CardContent, CardActionArea, Skeleton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../services/api';
-import Loader from '../components/Loader';
 import Message from '../components/Message';
 
 const LessonsPage = () => {
@@ -35,23 +33,33 @@ const LessonsPage = () => {
       <Typography variant="h4" gutterBottom>
         Lessons
       </Typography>
-      {loading && <Loader />}
       {error && <Message severity="error">{error}</Message>}
       <Grid container spacing={3}>
-        {lessons.map((lesson) => (
-          <Grid item xs={12} sm={6} md={4} key={lesson._id}>
-            <Card>
-              <CardActionArea onClick={() => navigate(`/lessons/${lesson._id}`)}>
-                <CardContent>
-                  <Typography variant="h6">{lesson.title}</Typography>
-                  <Typography variant="body2" color="textSecondary" noWrap>
-                    {lesson.description}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        ))}
+        {loading
+          ? Array.from(new Array(6)).map((_, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card>
+                  <CardContent>
+                    <Skeleton variant="text" height={40} />
+                    <Skeleton variant="text" height={20} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))
+          : lessons.map((lesson) => (
+              <Grid item xs={12} sm={6} md={4} key={lesson._id}>
+                <Card>
+                  <CardActionArea onClick={() => navigate(`/lessons/${lesson._id}`)}>
+                    <CardContent>
+                      <Typography variant="h6">{lesson.title}</Typography>
+                      <Typography variant="body2" color="textSecondary" noWrap>
+                        {lesson.description}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
       </Grid>
     </Layout>
   );

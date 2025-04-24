@@ -1,44 +1,15 @@
-import path from 'path';
+export const errorHandler = (err, req, res, next) => {
+  const statusCode = res.statusCode && res.statusCode >= 400 ? res.statusCode : 500;
 
-// backend/middleware/errorMiddleware.js
-
-// Handles routes that are not found
-const notFound = (req, res, next) => {
-  // Ignore requests for static assets (files with extensions)
-  if (path.extname(req.originalUrl)) {
-    // Let express.static handle this or just send 404 without error
-    res.status(404).end();
-    return;
-  }
-  const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
-  next(error); // Pass error to the next middleware (our error handler)
-};
-
-// General error handler
-const errorHandler = (err, req, res, next) => {
-  // Sometimes errors come with a status code, otherwise default to 500
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-
-  console.error('ERROR STACK:', err.stack); // Log the error stack for debugging
-
-  // Handle Mongoose validation errors specifically
-  if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map(e => e.message);
-    return res.status(400).json({
-      success: false,
-      message: 'Validation Error',
-      errors,
-    });
+  if (statusCode >= 500 || process.env.NODE_ENV !== 'test') {
+    console.error('[' + statusCode + '] ' + req.method + ' ' + req.originalUrl + ' - Error: ' + err.message);
+    if (statusCode >= 500 || process.env.NODE_ENV === 'development') {
+      console.error('ERROR STACK:', err.stack);
+    }
   }
 
-  res.json({
-    success: false,
-    message: err.message,
-    // Optionally include stack trace in development environment only
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+  res.status(statusCode).json({
+    message: err.message || 'An unexpected error occurred',
+    stack: process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test' ? null : err.stack,
   });
 };
-
-export { notFound, errorHandler };

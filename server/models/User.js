@@ -1,81 +1,76 @@
-import { DataTypes } from 'sequelize';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { sequelize } from '../config/database.js';
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
-  },
-  username: {
-    type: DataTypes.STRING,
-    allowNull: false,
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
     unique: true,
-    validate: {
-      len: [3, 30]
-    }
+    trim: true,
+    minlength: [3, 'Name must be at least 3 characters long'],
+    maxlength: [30, 'Name cannot exceed 30 characters']
   },
   email: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: [true, 'Email is required'],
     unique: true,
-    validate: {
-      isEmail: true
-    }
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      len: [6, 100]
-    }
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters long'],
+    maxlength: [100, 'Password cannot exceed 100 characters'],
+    select: false // Don't include password in query results by default
   },
-  role: {
-    type: DataTypes.ENUM('student', 'teacher', 'admin'),
-    defaultValue: 'student'
+  isAdmin: {
+    type: Boolean,
+    default: false
   },
   firstName: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    trim: true
   },
   lastName: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    trim: true
   },
   avatar: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    trim: true
   },
   isActive: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: Boolean,
+    default: true
   },
   lastLogin: {
-    type: DataTypes.DATE,
-    allowNull: true
+    type: Date
   }
 }, {
-  timestamps: true,
-  hooks: {
-    beforeCreate: async (user) => {
-      if (user.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    },
-    beforeUpdate: async (user) => {
-      if (user.changed('password')) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-      }
-    }
+  timestamps: true
+});
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
   }
 });
 
 // Instance method to check password
-User.prototype.validatePassword = async function(password) {
+userSchema.methods.matchPassword = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
+
+// Only create the model if it doesn't already exist
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

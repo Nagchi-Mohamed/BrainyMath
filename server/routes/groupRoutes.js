@@ -1,39 +1,40 @@
 import express from 'express';
 import { body } from 'express-validator';
 import {
-  listGroups,
-  getGroupDetails,
+  getAllGroups,
+  getGroupById,
   createGroup,
   joinGroup,
   leaveGroup,
-  manageMember,
+  getGroupMembers,
+  removeGroupMember,
+  promoteGroupMember,
 } from '../controllers/groupController.js';
-import auth from '../middleware/auth.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-const protect = auth;
 
-// List groups with optional search
-router.get('/', listGroups);
+router.route('/').get(protect, getAllGroups);
 
-// Get group details and members
-router.get('/:id', getGroupDetails);
-
-// Create a new group (protected)
-router.post(
-  '/',
+router.route('/').post(
   protect,
-  [body('name').notEmpty().withMessage('Group name is required')],
+  [
+    body('name').notEmpty().withMessage('Name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+  ],
   createGroup
 );
 
-// Join a group (protected)
-router.post('/:id/join', protect, joinGroup);
+router.route('/:groupId').get(protect, getGroupById);
 
-// Leave a group (protected)
-router.post('/:id/leave', protect, leaveGroup);
+router.route('/:groupId/join').post(protect, joinGroup);
 
-// Manage group members (promote/demote/remove) (protected)
-router.put('/:groupId/members/:memberId', protect, manageMember);
+router.route('/:groupId/leave').delete(protect, leaveGroup);
+
+router.route('/:groupId/members').get(protect, getGroupMembers);
+
+router.route('/:groupId/members/:userId').delete(protect, removeGroupMember);
+
+router.route('/:groupId/members/:userId/promote').post(protect, promoteGroupMember);
 
 export default router;

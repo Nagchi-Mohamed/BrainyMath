@@ -1,8 +1,8 @@
-// frontend/src/components/Header.js
 import React, { useContext } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import CalculateIcon from '@mui/icons-material/Calculate';
 
 const Header = () => {
   const { user, logout } = useContext(AuthContext);
@@ -14,11 +14,14 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="primary" elevation={4}>
       <Toolbar>
-        <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}>
-          BrainyMath
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <CalculateIcon sx={{ mr: 1, fontSize: 30 }} />
+          <Typography variant="h6" component={Link} to="/" sx={{ color: 'inherit', textDecoration: 'none' }}>
+            BrainyMath
+          </Typography>
+        </Box>
         {user ? (
           <Box>
             <Button color="inherit" component={Link} to="/profile">

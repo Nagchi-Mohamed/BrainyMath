@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-// Create axios instance with base URL
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? '/api'  // In production, API calls will be relative to the host
+  : 'http://localhost:5000/api';  // In development, point to local server
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add request interceptor to add auth token
+// Add a request interceptor for auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -17,17 +20,22 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Add response interceptor to handle errors
+// Add a response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors (token expired)
+    // Handle unauthorized errors (expired token)
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Redirect to login if needed
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

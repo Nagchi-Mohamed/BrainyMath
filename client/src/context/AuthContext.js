@@ -1,5 +1,5 @@
 // frontend/src/context/AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext();
@@ -71,4 +71,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+export const useAuth = () => useContext(AuthContext);
+
+export { AuthProvider, useAuth };
 export default AuthContext;

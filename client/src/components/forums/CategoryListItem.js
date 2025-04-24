@@ -1,11 +1,29 @@
 import React from 'react';
-import { ListItem, ListItemText } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 
 const CategoryListItem = ({ category }) => {
   return (
-    <ListItem button component={Link} to={`/forums/categories/${category._id}`}>
-      <ListItemText primary={category.name} secondary={category.description} />
+    <ListItem disablePadding>
+      <Card sx={{ width: '100%' }}>
+        <CardContent>
+          <Typography
+            component={RouterLink}
+            to={`/forums/categories/${category._id}`}
+            variant="h6"
+            sx={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            {category.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {category.description}
+          </Typography>
+        </CardContent>
+      </Card>
     </ListItem>
   );
 };

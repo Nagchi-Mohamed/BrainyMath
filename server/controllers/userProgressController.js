@@ -1,111 +1,54 @@
-import UserProgress from '../models/UserProgress.js';
-import Lesson from '../models/Lesson.js';
-import { sequelize } from '../config/database.js';
+import { validationResult } from 'express-validator';
+import asyncHandler from 'express-async-handler';
+import UserProgress from '../models/userProgressModel.js';
 
-// Get progress for a specific user
-export const getUserProgress = async (req, res) => {
-  try {
-    const progress = await UserProgress.findAll({
-      where: { userId: req.user.id },
-      include: [{
-        model: Lesson,
-        attributes: ['title', 'level', 'duration']
-      }],
-      order: [['updatedAt', 'DESC']]
-    });
-    res.json(progress);
-  } catch (error) {
-    console.error('Error fetching user progress:', error);
-    res.status(500).json({ error: 'Failed to fetch user progress' });
+// @desc    Record or update user progress
+// @route   POST /api/progress
+// @access  Private
+const recordProgress = asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-};
 
-// Get progress for a specific lesson
-export const getLessonProgress = async (req, res) => {
+  const { itemId, itemType, status, score, possibleScore } = req.body;
+  const userId = req.user._id;
+
   try {
-    const progress = await UserProgress.findOne({
-      where: {
-        userId: req.user.id,
-        lessonId: req.params.lessonId
+    const updatedProgress = await UserProgress.findOneAndUpdate(
+      { user: userId, item: itemId, itemType },
+      {
+        $set: {
+          status,
+          score: score !== undefined ? score : undefined,
+          possibleScore: possibleScore !== undefined ? possibleScore : undefined,
+          completedAt: ['Completed', 'Passed', 'Failed'].includes(status) ? new Date() : undefined,
+        },
       },
-      include: [{
-        model: Lesson,
-        attributes: ['title', 'level', 'duration']
-      }]
-    });
-    
-    if (!progress) {
-      return res.status(404).json({ error: 'Progress not found' });
-    }
-    
-    res.json(progress);
-  } catch (error) {
-    console.error('Error fetching lesson progress:', error);
-    res.status(500).json({ error: 'Failed to fetch lesson progress' });
-  }
-};
+      { new: true, upsert: true }
+    );
 
-// Update progress for a lesson
-export const updateProgress = async (req, res) => {
+    res.status(200).json(updatedProgress);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to record progress' });
+  }
+});
+
+// @desc    Get user progress
+// @route   GET /api/progress/me
+// @access  Private
+const getUserProgress = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
   try {
-    const { lessonId, status, score } = req.body;
-    
-    const [progress, created] = await UserProgress.findOrCreate({
-      where: {
-        userId: req.user.id,
-        lessonId
-      },
-      defaults: {
-        status: 'not_started',
-        score: null
-      }
-    });
-
-    const updates = {
-      status,
-      score: score || progress.score,
-      lastAttemptedAt: new Date()
-    };
-
-    if (status === 'completed') {
-      updates.completedAt = new Date();
-    }
-
-    await progress.update(updates);
-    
-    res.json(progress);
+    const progressRecords = await UserProgress.find({ user: userId });
+    res.status(200).json(progressRecords);
   } catch (error) {
-    console.error('Error updating progress:', error);
-    res.status(500).json({ error: 'Failed to update progress' });
+    res.status(500).json({ message: 'Failed to fetch user progress' });
   }
-};
+});
 
-// Get user's overall progress statistics
-export const getProgressStats = async (req, res) => {
-  try {
-    const stats = await UserProgress.findAll({
-      where: { userId: req.user.id },
-      attributes: [
-        'status',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-      ],
-      group: ['status']
-    });
-
-    const totalLessons = await Lesson.count();
-    const completedLessons = stats.find(s => s.status === 'completed')?.count || 0;
-    const inProgressLessons = stats.find(s => s.status === 'in_progress')?.count || 0;
-    const notStartedLessons = totalLessons - completedLessons - inProgressLessons;
-
-    res.json({
-      total: totalLessons,
-      completed: completedLessons,
-      inProgress: inProgressLessons,
-      notStarted: notStartedLessons,
-      completionPercentage: (completedLessons / totalLessons) * 100
-    });
-  } catch (error) {
-    console.error('Error fetching progress stats:', error);
-    res.status(500).json({ error: 'Failed to fetch progress statistics' });
-  }
+export {
+  recordProgress,
+  getUserProgress,
 };

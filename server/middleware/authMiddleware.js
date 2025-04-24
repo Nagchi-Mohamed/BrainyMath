@@ -14,33 +14,34 @@ const protect = asyncHandler(async (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
-    try {
-      // Get token from header
-      token = req.headers.authorization.split(' ')[1];
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Get user from the token payload (using the 'id' field we added)
-      // Exclude the password field from the user object attached to req
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-          res.status(401);
-          throw new Error('Not authorized, user not found');
-      }
-
-      next(); // Proceed to the protected route
-    } catch (error) {
-      console.error('Token verification failed:', error);
-      res.status(401); // Unauthorized
-      throw new Error('Not authorized, token failed or expired');
-    }
+    // Get token from header
+    token = req.headers.authorization.split(' ')[1];
   }
 
+  // If no token found, return error
   if (!token) {
-    res.status(401);
-    throw new Error('Not authorized, no token provided');
+    res.status(401).json({ error: 'Not authorized, no token provided' });
+    return;
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user from the token payload (using the 'id' field we added)
+    // Exclude the password field from the user object attached to req
+    req.user = await User.findById(decoded.id).select('-password');
+
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authorized, user not found' });
+      return;
+    }
+
+    next(); // Proceed to the protected route
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    res.status(401).json({ error: 'Not authorized, token failed or expired' });
+    return;
   }
 });
 
@@ -49,8 +50,7 @@ const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next(); // User is admin, proceed
   } else {
-    res.status(403); // Forbidden
-    throw new Error('Not authorized as an admin');
+    res.status(403).json({ error: 'Not authorized as admin' });
   }
 };
 

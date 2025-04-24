@@ -31,8 +31,7 @@ const getLessonById = asyncHandler(async (req, res) => {
 const createLesson = asyncHandler(async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400);
-    throw new Error(errors.array()[0].msg);
+    return res.status(400).json({ errors: errors.array() });
   }
 
   const { title, description, content, category, difficulty } = req.body;
@@ -77,7 +76,7 @@ const deleteLesson = asyncHandler(async (req, res) => {
   const lesson = await Lesson.findById(req.params.id);
 
   if (lesson) {
-    await lesson.remove();
+    await Lesson.deleteOne({ _id: lesson._id });
     res.json({ message: 'Lesson removed successfully' });
   } else {
     res.status(404);

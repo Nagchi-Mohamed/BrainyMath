@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import Loader from '../components/Loader';
+import Message from '../components/Message';
+import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 
 const ProfileContainer = styled.div`
   padding: 2rem;
@@ -35,14 +39,29 @@ const Value = styled.div`
   font-size: 1.1rem;
 `;
 
-const Message = styled.div`
-  color: #666;
-  text-align: center;
-  font-size: 1.1rem;
-`;
-
 function Profile() {
   const { user } = useAuth();
+
+  const [progressData, setProgressData] = useState([]);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [errorProgress, setErrorProgress] = useState(null);
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      setLoadingProgress(true);
+      setErrorProgress(null);
+      try {
+        const { data } = await api.get('/progress/me');
+        setProgressData(data);
+      } catch (error) {
+        setErrorProgress('Failed to load progress data. Please try again later.');
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    fetchProgress();
+  }, []);
 
   if (!user) {
     return (
@@ -72,8 +91,30 @@ function Profile() {
           <Value>{user.role}</Value>
         </ProfileField>
       </ProfileCard>
+
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom>My Progress</Typography>
+        {loadingProgress ? (
+          <Loader />
+        ) : errorProgress ? (
+          <Message severity="error">{errorProgress}</Message>
+        ) : progressData && progressData.length > 0 ? (
+          <List>
+            {progressData.map((item) => (
+              <ListItem key={item.itemId}>
+                <ListItemText
+                  primary={`${item.itemType} ID: ${item.itemId}`}
+                  secondary={`Status: ${item.status} ${item.score !== undefined ? `(Score: ${item.score}/${item.possibleScore})` : ''} - Completed: ${new Date(item.completedAt || item.updatedAt).toLocaleDateString()}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography>No progress recorded yet.</Typography>
+        )}
+      </Box>
     </ProfileContainer>
   );
 }
 
-export default Profile; 
+export default Profile;

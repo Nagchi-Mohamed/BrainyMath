@@ -1,6 +1,6 @@
 // frontend/src/pages/LessonDetailPage.js
 import React, { useEffect, useState } from 'react';
-import { Typography, Box, Paper } from '@mui/material';
+import { Typography, Box, Paper, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../services/api';
@@ -12,6 +12,28 @@ const LessonDetailPage = () => {
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isMarking, setIsMarking] = useState(false);
+  const [markError, setMarkError] = useState(null);
+  const [markSuccess, setMarkSuccess] = useState(false);
+
+  const handleMarkComplete = async () => {
+    setIsMarking(true);
+    setMarkError(null);
+    setMarkSuccess(false);
+
+    try {
+      await api.post('/api/progress', {
+        itemId: id,
+        itemType: 'Lesson',
+        status: 'Completed',
+      });
+      setMarkSuccess(true);
+    } catch (err) {
+      setMarkError(err.response?.data?.message || err.message);
+    } finally {
+      setIsMarking(false);
+    }
+  };
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -44,6 +66,17 @@ const LessonDetailPage = () => {
           <Paper sx={{ p: 3, mt: 2 }}>
             <Typography variant="body1" component="div" dangerouslySetInnerHTML={{ __html: lesson.content }} />
           </Paper>
+          {markError && <Message severity="error">{markError}</Message>}
+          {markSuccess && <Message severity="success">Lesson marked as completed!</Message>}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleMarkComplete}
+            disabled={isMarking || markSuccess}
+            sx={{ mt: 2 }}
+          >
+            {isMarking ? 'Marking...' : 'Mark as Completed'}
+          </Button>
         </Box>
       )}
     </Layout>

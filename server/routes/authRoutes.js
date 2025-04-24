@@ -19,7 +19,7 @@ router.post(
   [
     body('name', 'Name is required').notEmpty(),
     body('email', 'Please include a valid email').isEmail(),
-    body('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
+    body('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
   ],
   registerUser
 );
@@ -44,13 +44,13 @@ router.put(
   [
     body('name', 'Name is required').optional().notEmpty(),
     body('email', 'Please include a valid email').optional().isEmail(),
-    body('password', 'Password must be 6 or more characters').optional().isLength({ min: 6 }),
+    body('password', 'Password must be at least 6 characters').optional().isLength({ min: 6 }),
   ],
   updateUserProfile
 );
 
 // Admin routes
-router.get('/', protect, admin, getUsers);
-router.delete('/:id', protect, admin, deleteUser);
+router.get('/users', protect, admin, getUsers);
+router.delete('/users/:id', protect, admin, deleteUser);
 
 export default router;
